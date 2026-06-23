@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم Flow-Afnan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg: #0b0e14; --bg2: #111827; --bg3: #1a1f2e; --accent: #3b82f6; --text: #e8e9f0; --text2: #9ca3af;
+            --border: #232839; --radius: 12px;
+        }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; direction: rtl; }
+        .container { max-width: 900px; margin: auto; }
+        .card { background: var(--bg2); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; border:1px solid var(--border); }
+        input, textarea, select { width:100%; padding:12px; margin:8px 0; background:var(--bg3); border:1px solid var(--border); border-radius:8px; color:#fff; font-family:inherit; }
+        button { background: var(--accent); color:#fff; border:none; padding:12px 24px; border-radius:30px; font-weight:700; cursor:pointer; margin:5px; }
+        .btn-danger { background: #ef4444; }
+        .btn-success { background: #10b981; }
+        .hidden { display: none; }
+        table { width:100%; border-collapse: collapse; margin-top:10px; }
+        th, td { padding:10px; border-bottom:1px solid var(--border); text-align:right; }
+        .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:var(--bg2); padding:12px 24px; border-radius:30px; border:1px solid var(--accent); z-index:999; }
+    </style>
+</head>
+<body>
+    <div class="container" id="loginSection">
+        <div class="card" style="text-align:center;">
+            <h2>🔐 دخول المدير</h2>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني" value="afnan@afnanai.com">
+            <input type="password" id="loginPassword" placeholder="كلمة المرور" value="afnan">
+            <button onclick="loginAdmin()">تسجيل الدخول</button>
+            <button class="btn-success" onclick="createAdminAccount()">إنشاء الحساب الإداري أول مرة</button>
+            <p id="loginError" style="color:red;"></p>
+        </div>
+    </div>
+
+    <div class="container hidden" id="dashboardSection">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>🛠️ لوحة تحكم Flow-Afnan</h2>
+            <button class="btn-danger" onclick="logout()">تسجيل الخروج</button>
+        </div>
+
+        <!-- Banner Settings -->
+        <div class="card">
+            <h3>إعدادات البانر</h3>
+            <input type="text" id="bannerImage" placeholder="رابط صورة البانر">
+            <input type="text" id="bannerLink" placeholder="رابط الصفحة (اختياري)">
+            <button onclick="saveBanner()">حفظ البانر</button>
+        </div>
+
+        <!-- Add/Edit Product -->
+        <div class="card">
+            <h3 id="formTitle">إضافة منتج جديد</h3>
+            <input type="hidden" id="editId">
+            <input type="text" id="prodName" placeholder="اسم المنتج" required>
+            <select id="prodCategory">
+                <option value="إلكترونيات">إلكترونيات</option><option value="هواتف">هواتف</option><option value="ملابس">ملابس</option>
+                <option value="منزل">منزل</option><option value="رياضة">رياضة</option><option value="ألعاب">ألعاب</option><option value="تجميل">تجميل</option>
+            </select>
+            <textarea id="prodDesc" placeholder="وصف المنتج"></textarea>
+            <input type="number" id="prodPrice" placeholder="السعر" step="0.01" required>
+            <label><input type="checkbox" id="prodDiscountActive"> تفعيل الخصم</label>
+            <input type="number" id="prodDiscountPercent" placeholder="نسبة الخصم %" value="0" min="0" max="100">
+            <div id="imageInputs">
+                <input type="text" class="prodImage" placeholder="رابط الصورة 1 (إجباري)" required>
+            </div>
+            <button onclick="addImageField()">+ إضافة رابط صورة</button>
+            <button onclick="submitProduct()">حفظ المنتج</button>
+        </div>
+
+        <!-- Product List -->
+        <div class="card">
+            <h3>المنتجات الحالية</h3>
+            <table id="productTable"><thead><tr><th>الصورة</th><th>الاسم</th><th>السعر</th><th>القسم</th><th>إجراءات</th></tr></thead><tbody></tbody></table>
+        </div>
+    </div>
+    <div class="toast hidden" id="toast"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA3w0gv38P6Ry_m3sMwXI-l-_NGuWKCUA",
+            authDomain: "flow-afnan.firebaseapp.com",
+            databaseURL: "https://flow-afnan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flow-afnan",
+            storageBucket: "flow-afnan.firebasestorage.app",
+            messagingSenderId: "730735289702",
+            appId: "1:730735289702:web:5b21d8fa380cb09e0f54a7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        auth.onAuthStateChanged(user => {
+            if (user && user.email === 'afnan@afnanai.com') {
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                loadProducts();
+                loadBanner();
+            } else {
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('dashboardSection').classList.add('hidden');
+            }
+        });
+
+        function loginAdmin() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+            auth.signInWithEmailAndPassword(email, pass).catch(e => {
+                document.getElementById('loginError').textContent = e.message;
+                if (e.code === 'auth/user-not-found') {
+                    document.getElementById('loginError').textContent += ' - يمكنك إنشاء الحساب أولاً.';
+                }
+            });
+        }
+        function createAdminAccount() {
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPassword').value;
+            auth.createUserWithEmailAndPassword(email, pass).then(() => {
+                showToast('تم إنشاء الحساب، جاري الدخول...');
+            }).catch(e => document.getElementById('loginError').textContent = e.message);
+        }
+        function logout() { auth.signOut(); }
+
+        function loadBanner() {
+            db.ref('banner').once('value', snap => {
+                const b = snap.val();
+                if (b) {
+                    document.getElementById('bannerImage').value = b.imageUrl || '';
+                    document.getElementById('bannerLink').value = b.linkUrl || '';
+                }
+            });
+        }
+        function saveBanner() {
+            const imageUrl = document.getElementById('bannerImage').value.trim();
+            const linkUrl = document.getElementById('bannerLink').value.trim();
+            db.ref('banner').set({ imageUrl, linkUrl }).then(() => showToast('تم حفظ البانر'));
+        }
+
+        function loadProducts() {
+            db.ref('products').on('value', snap => {
+                const data = snap.val();
+                const tbody = document.querySelector('#productTable tbody');
+                tbody.innerHTML = '';
+                if (data) {
+                    Object.entries(data).forEach(([key, prod]) => {
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td><img src="${prod.images?.[0] || ''}" width="40" height="40" style="object-fit:cover; border-radius:4px;"></td>
+                            <td>${prod.name}</td>
+                            <td>$${prod.price}</td>
+                            <td>${prod.category}</td>
+                            <td>
+                                <button onclick="editProduct('${key}')">✏️</button>
+                                <button class="btn-danger" onclick="deleteProduct('${key}')">🗑️</button>
+                            </td>
+                        `;
+                    });
+                }
+            });
+        }
+
+        function editProduct(key) {
+            db.ref(`products/${key}`).once('value', snap => {
+                const p = snap.val();
+                document.getElementById('editId').value = key;
+                document.getElementById('formTitle').textContent = 'تعديل المنتج';
+                document.getElementById('prodName').value = p.name;
+                document.getElementById('prodCategory').value = p.category;
+                document.getElementById('prodDesc').value = p.desc || '';
+                document.getElementById('prodPrice').value = p.price;
+                document.getElementById('prodDiscountActive').checked = p.discountActive || false;
+                document.getElementById('prodDiscountPercent').value = p.discountPercent || 0;
+                // rebuild image inputs
+                const container = document.getElementById('imageInputs');
+                container.innerHTML = '';
+                (p.images || []).forEach((img, i) => {
+                    container.innerHTML += `<input type="text" class="prodImage" placeholder="رابط الصورة ${i+1}" value="${img}" ${i===0?'required':''}>`;
+                });
+                if (!p.images || p.images.length === 0) {
+                    container.innerHTML = '<input type="text" class="prodImage" placeholder="رابط الصورة 1 (إجباري)" required>';
+                }
+            });
+        }
+
+        function deleteProduct(key) {
+            if (confirm('متأكد من حذف المنتج؟')) {
+                db.ref(`products/${key}`).remove().then(() => showToast('تم الحذف'));
+            }
+        }
+
+        function addImageField() {
+            const container = document.getElementById('imageInputs');
+            const count = container.querySelectorAll('.prodImage').length;
+            if (count < 5) {
+                container.innerHTML += `<input type="text" class="prodImage" placeholder="رابط الصورة ${count+1}">`;
+            }
+        }
+
+        function submitProduct() {
+            const editId = document.getElementById('editId').value;
+            const name = document.getElementById('prodName').value.trim();
+            const category = document.getElementById('prodCategory').value;
+            const desc = document.getElementById('prodDesc').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const discountActive = document.getElementById('prodDiscountActive').checked;
+            const discountPercent = parseFloat(document.getElementById('prodDiscountPercent').value) || 0;
+            const images = Array.from(document.querySelectorAll('.prodImage')).map(inp => inp.value.trim()).filter(url => url);
+            if (!name || !price || images.length === 0) { showToast('املأ الحقول الإجبارية'); return; }
+            const productData = { name, category, desc, price, discountActive, discountPercent, images, rating: 4.5 };
+            if (editId) {
+                db.ref(`products/${editId}`).update(productData).then(() => { showToast('تم التحديث'); resetForm(); });
+            } else {
+                db.ref('products').push(productData).then(() => { showToast('تمت الإضافة'); resetForm(); });
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').textContent = 'إضافة منتج جديد';
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodDesc').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodDiscountActive').checked = false;
+            document.getElementById('prodDiscountPercent').value = '0';
+            document.getElementById('imageInputs').innerHTML = '<input type="text" class="prodImage" placeholder="رابط الصورة 1 (إجباري)" required>';
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2500);
+        }
+    </script>
+</body>
+</html>
