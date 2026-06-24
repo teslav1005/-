@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flow-Afnan | منصة التسوق</title>
+    <title>RAQEM | متجرك الفاخر للملابس والعطور والساعات</title>
     <!-- Font Awesome & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -305,7 +305,7 @@
 
     <!-- Header -->
     <div class="header">
-        <div class="header-logo" onclick="goHome()">Spaito<span>Store</span></div>
+        <div class="header-logo" onclick="goHome()">RAQEM<span>Store</span></div>
         <div class="header-spacer"></div>
         <div class="header-actions">
             <button class="btn-icon" onclick="toggleCart()"><i class="fa-solid fa-bag-shopping"></i><span class="badge-count" id="cartBadge" style="display:none;">0</span></button>
@@ -413,12 +413,9 @@
         // --- Categories ---
         const categories = [
             { id: 'all', name: 'الكل', icon: 'fa-grid-2' },
-            { id: 'إلكترونيات', name: 'إلكترونيات', icon: 'fa-laptop' },
-            { id: 'هواتف', name: 'هواتف', icon: 'fa-mobile-screen' },
-            { id: 'ملابس', name: 'ملابس', icon: 'fa-shirt' },
-            { id: 'منزل', name: 'منزل', icon: 'fa-house' },
-            { id: 'رياضة', name: 'رياضة', icon: 'fa-futbol' },
-            { id: 'عطور', name: 'عطور وتجميل', icon: 'fa-spray-can-sparkles' }
+            { id: 'ملابس', name: 'ملابس عصرية', icon: 'fa-shirt' },
+            { id: 'عطور', name: 'عطور عالمية', icon: 'fa-spray-can-sparkles' },
+            { id: 'ساعات', name: 'ساعات فاخرة', icon: 'fa-watch' }
         ];
 
         function renderCategories() {
@@ -644,7 +641,7 @@
 
         function checkoutCart() {
             if (cart.length === 0) { showToast('السلة فارغة'); return; }
-            let msg = '🛒 *طلب جديد من Spaito Store*\n\n';
+            let msg = '🛒 *طلب جديد من RAQEM*\n\n';
             let total = 0;
             cart.forEach(item => {
                 const prod = productsCache.find(p => p.id === item.id);
