@@ -314,6 +314,133 @@
             margin-top: 10px;
         }
 
+        /* ================= نافذة تسجيل الدخول (Modal) ================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition-smooth);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, var(--bg-lighter), var(--bg-dark));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 90%;
+            max-width: 440px;
+            text-align: center;
+            transform: scale(0.85) translateY(30px);
+            transition: var(--transition-smooth);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.05) inset;
+            position: relative;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            width: 35px; height: 35px;
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+        }
+
+        .close-modal:hover {
+            color: var(--primary-rose);
+            background: rgba(255, 74, 128, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .modal-logo {
+            height: 70px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 800;
+        }
+        
+        .modal-desc {
+            color: var(--text-muted);
+            margin-bottom: 35px;
+            font-size: 14px;
+        }
+
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            background-color: #ffffff;
+            color: #111;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.05);
+        }
+
+        .google-btn:hover {
+            background-color: #f5f5f5;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.15);
+        }
+
+        .google-btn img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
         /* ================= الأنيميشن والتأثيرات المتحركة ================= */
         @keyframes float {
             0% { transform: translateY(0px) rotate(0deg); }
@@ -342,6 +469,7 @@
             .categories-chips { gap: 10px; }
             .chip { padding: 6px 15px; font-size: 12px; }
             .footer-links { flex-direction: column; align-items: center; gap: 15px; }
+            .modal-content { padding: 40px 25px; }
         }
     </style>
 </head>
@@ -397,7 +525,7 @@
 
         <!-- روابط سياسة الخصوصية والاتفاقيات المضافة -->
         <div class="footer-links">
-            <a href="e.html">المتجر</a>
+            <a href="#">الرئيسية</a>
             <a href="#">من نحن</a>
             <a href="#">اتفاقية المستخدم</a>
             <a href="#">سياسة الخصوصية</a>
@@ -408,6 +536,22 @@
             &copy; 2026 Spaito Store. جميع الحقوق محفوظة لـ سبايتو للتجارة الإلكترونية.
         </div>
     </footer>
+
+    <!-- نافذة تسجيل الدخول (Modal) -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModalBtn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="loading-spinner" id="loadingSpinner"></div>
+            <img src="https://i.postimg.cc/wMnkqXVg/6640.png" alt="Spaito Store Logo" class="modal-logo">
+            <h2 class="modal-title">مرحباً بك في سبايتو</h2>
+            <p class="modal-desc">سجل دخولك الآن لتتبع طلباتك والحصول على كوبونات الخصم الحصرية</p>
+            
+            <button class="google-btn" id="googleLoginBtn" onclick="googleLogin()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo">
+                المتابعة باستخدام Google
+            </button>
+        </div>
+    </div>
 
     <!-- سكربت جافا سكربت للتحكم في فتح وإغلاق النافذة وتأثيرات الصفحة -->
     <script>
@@ -424,26 +568,65 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
+        const modal = document.getElementById('loginModal');
+        const openBtn1 = document.getElementById('openModalBtn');
+        const openBtn2 = document.getElementById('openModalBtnMain');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        // فتح النافذة المنبثقة
+        function openModal() {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden'; // منع التمرير عند فتح النافذة
+        }
+
+        // إغلاق النافذة المنبثقة
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto'; // إعادة إمكانية التمرير
+        }
+
+        // تسجيل الدخول عبر Google
+        function googleLogin() {
+            googleLoginBtn.disabled = true;
+            loadingSpinner.classList.add('show');
+            
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).then(result => {
+                closeModal();
+                loadingSpinner.classList.remove('show');
+                googleLoginBtn.disabled = false;
+                // توجيه المستخدم إلى صفحة المتجر
+                setTimeout(() => {
+                    window.location.href = 'e.html';
+                }, 500);
+            }).catch(error => {
+                console.error('خطأ في تسجيل الدخول:', error);
+                loadingSpinner.classList.remove('show');
+                googleLoginBtn.disabled = false;
+                alert('حدث خطأ في تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+            });
+        }
+
         // التحقق من حالة تسجيل الدخول
         auth.onAuthStateChanged(user => {
-            const btn = document.getElementById('openModalBtn');
             if (user) {
-                btn.textContent = user.displayName?.split(' ')[0] || 'حسابي';
-            } else {
-                btn.textContent = 'حسابي';
+                // إذا كان المستخدم مسجل دخول بالفعل، توجيهه مباشرة إلى المتجر
+                window.location.href = 'e.html';
             }
         });
 
-        // فتح نافذة تسجيل الدخول في e.html
-        function openShop() {
-            window.location.href = 'e.html';
-        }
+        openBtn1.addEventListener('click', openModal);
+        openBtn2.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
 
-        const openBtn1 = document.getElementById('openModalBtn');
-        const openBtn2 = document.getElementById('openModalBtnMain');
-
-        openBtn1.addEventListener('click', openShop);
-        openBtn2.addEventListener('click', openShop);
+        // إغلاق النافذة عند الضغط في أي مكان خارج المربع
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
 
         // تأثير إضافي لشريط التنقل العلوي عند التمرير لأسفل
         window.addEventListener('scroll', () => {
