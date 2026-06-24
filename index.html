@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <style>
         /* ================= المتغيرات والألوان الفخمة ================= */
@@ -310,111 +314,6 @@
             margin-top: 10px;
         }
 
-        /* ================= نافذة تسجيل الدخول (Modal) ================= */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(12px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition-smooth);
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, var(--bg-lighter), var(--bg-dark));
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 50px 40px;
-            width: 90%;
-            max-width: 440px;
-            text-align: center;
-            transform: scale(0.85) translateY(30px);
-            transition: var(--transition-smooth);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.05) inset;
-            position: relative;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: scale(1) translateY(0);
-        }
-
-        .close-modal {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            color: var(--text-muted);
-            font-size: 24px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            width: 35px; height: 35px;
-            display: flex; justify-content: center; align-items: center;
-            border-radius: 50%;
-        }
-
-        .close-modal:hover {
-            color: var(--primary-rose);
-            background: rgba(255, 74, 128, 0.1);
-            transform: rotate(90deg);
-        }
-
-        .modal-logo {
-            height: 70px;
-            margin-bottom: 25px;
-            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
-        }
-
-        .modal-title {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: #fff;
-            font-weight: 800;
-        }
-        
-        .modal-desc {
-            color: var(--text-muted);
-            margin-bottom: 35px;
-            font-size: 14px;
-        }
-
-        .google-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            width: 100%;
-            background-color: #ffffff;
-            color: #111;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 16px;
-            cursor: pointer;
-            transition: var(--transition-smooth);
-            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.05);
-        }
-
-        .google-btn:hover {
-            background-color: #f5f5f5;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.15);
-        }
-
-        .google-btn img {
-            width: 24px;
-            height: 24px;
-        }
-
         /* ================= الأنيميشن والتأثيرات المتحركة ================= */
         @keyframes float {
             0% { transform: translateY(0px) rotate(0deg); }
@@ -498,7 +397,7 @@
 
         <!-- روابط سياسة الخصوصية والاتفاقيات المضافة -->
         <div class="footer-links">
-            <a href="#">الرئيسية</a>
+            <a href="e.html">المتجر</a>
             <a href="#">من نحن</a>
             <a href="#">اتفاقية المستخدم</a>
             <a href="#">سياسة الخصوصية</a>
@@ -510,50 +409,41 @@
         </div>
     </footer>
 
-    <!-- نافذة تسجيل الدخول (Modal) -->
-    <div class="modal-overlay" id="loginModal">
-        <div class="modal-content">
-            <span class="close-modal" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></span>
-            <img src="https://i.postimg.cc/wMnkqXVg/6640.png" alt="Spaito Store Logo" class="modal-logo">
-            <h2 class="modal-title">مرحباً بك في سبايتو</h2>
-            <p class="modal-desc">سجل دخولك الآن لتتبع طلباتك والحصول على كوبونات الخصم الحصرية</p>
-            
-            <button class="google-btn">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo">
-                المتابعة باستخدام Google
-            </button>
-        </div>
-    </div>
-
     <!-- سكربت جافا سكربت للتحكم في فتح وإغلاق النافذة وتأثيرات الصفحة -->
     <script>
-        const modal = document.getElementById('loginModal');
-        const openBtn1 = document.getElementById('openModalBtn');
-        const openBtn2 = document.getElementById('openModalBtnMain');
-        const closeBtn = document.getElementById('closeModalBtn');
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBA3w0gv38P6Ry_m3sMwXI-l-_NGuWKCUA",
+            authDomain: "flow-afnan.firebaseapp.com",
+            databaseURL: "https://flow-afnan-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flow-afnan",
+            storageBucket: "flow-afnan.firebasestorage.app",
+            messagingSenderId: "730735289702",
+            appId: "1:730735289702:web:5b21d8fa380cb09e0f54a7"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
 
-        // فتح النافذة المنبثقة
-        function openModal() {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden'; // منع التمرير عند فتح النافذة
-        }
-
-        // إغلاق النافذة المنبثقة
-        function closeModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto'; // إعادة إمكانية التمرير
-        }
-
-        openBtn1.addEventListener('click', openModal);
-        openBtn2.addEventListener('click', openModal);
-        closeBtn.addEventListener('click', closeModal);
-
-        // إغلاق النافذة عند الضغط في أي مكان خارج المربع
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
+        // التحقق من حالة تسجيل الدخول
+        auth.onAuthStateChanged(user => {
+            const btn = document.getElementById('openModalBtn');
+            if (user) {
+                btn.textContent = user.displayName?.split(' ')[0] || 'حسابي';
+            } else {
+                btn.textContent = 'حسابي';
             }
         });
+
+        // فتح نافذة تسجيل الدخول في e.html
+        function openShop() {
+            window.location.href = 'e.html';
+        }
+
+        const openBtn1 = document.getElementById('openModalBtn');
+        const openBtn2 = document.getElementById('openModalBtnMain');
+
+        openBtn1.addEventListener('click', openShop);
+        openBtn2.addEventListener('click', openShop);
 
         // تأثير إضافي لشريط التنقل العلوي عند التمرير لأسفل
         window.addEventListener('scroll', () => {
